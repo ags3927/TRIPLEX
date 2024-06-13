@@ -17,7 +17,7 @@ from einops import rearrange
 from models.module import GlobalEncoder, NeighborEncoder, FusionEncoder
 
 
-def load_model_weights(path: str):       
+def load_model_weights(path: str, device = torch.device(f"cuda:0" if torch.cuda.is_available() else "cpu")):       
         """Load pretrained ResNet18 model without final fc layer.
 
         Args:
@@ -38,7 +38,7 @@ def load_model_weights(path: str):
             ckpt_url='https://github.com/ozanciga/self-supervised-histopathology/releases/download/tenpercent/tenpercent_resnet18.ckpt'
             wget.download(ckpt_url, out=ckpt_dir)
             
-        state = torch.load(path)
+        state = torch.load(path, map_location=device)
         state_dict = state['state_dict']
         for key in list(state_dict.keys()):
             state_dict[key.replace('model.', '').replace('resnet.', '')] = state_dict.pop(key)
