@@ -126,7 +126,12 @@ class TRIPLEX(pl.LightningModule):
         # Fusion Layer
         self.fusion_encoder = FusionEncoder(emb_dim, depth1, num_heads1, int(emb_dim*mlp_ratio1), dropout1)    
         self.fc = nn.Linear(emb_dim, num_genes)
-    
+
+        # Validation step outputs
+        self.validation_step_outputs = []
+        
+        # Test set outputs
+        self.test_step_outputs = []    
     
     def forward(self, x, x_total, position, neighbor, mask, pid=None, sid=None):
         """Forward pass of TRIPLEX
@@ -237,9 +242,13 @@ class TRIPLEX(pl.LightningModule):
         
         self.get_meta(name)
         
+        self.validation_step_outputs.append({"val_loss":loss, "corr":rr})
+        
         return {"val_loss":loss, "corr":rr}
     
-    def validation_epoch_end(self, outputs):
+    def on_validation_epoch_end(self):
+        outputs = self.validation_step_outputs
+        
         avg_loss = torch.stack(
             [x["val_loss"] for x in outputs]).mean()
         
@@ -256,6 +265,9 @@ class TRIPLEX(pl.LightningModule):
         
         self.log('valid_loss', avg_loss, on_epoch=True, prog_bar=True, logger=True, sync_dist=True)
         self.log('R', avg_corr.nanmean(), on_epoch=True, prog_bar=True, logger=True, sync_dist=True)
+        
+        # Clear memory
+        self.validation_step_outputs.clear()
     
     def test_step(self, batch, batch_idx):
         """Testing the model in a sample. 
@@ -315,9 +327,13 @@ class TRIPLEX(pl.LightningModule):
         os.makedirs(f"final/{self.__class__.__name__}_{self.num_n}/{self.data}/{self.patient}", exist_ok=True)
         np.save(f"final/{self.__class__.__name__}_{self.num_n}/{self.data}/{self.patient}/{name[0]}", pred.T)
         
+        self.test_step_outputs.append({"MSE":mse, "MAE":mae, "corr":rr})
+        
         return {"MSE":mse, "MAE":mae, "corr":rr}
     
-    def test_epoch_end(self, outputs):
+    def on_test_epoch_end(self):
+        outputs = self.test_step_outputs
+        
         avg_mse = torch.stack(
             [x["MSE"] for x in outputs]).nanmean()
 
@@ -331,6 +347,8 @@ class TRIPLEX(pl.LightningModule):
         torch.save(avg_mse.cpu(), f"final/{self.__class__.__name__}_{self.num_n}/{self.data}/{self.patient}/MSE")
         torch.save(avg_mae.cpu(), f"final/{self.__class__.__name__}_{self.num_n}/{self.data}/{self.patient}/MAE")
         torch.save(avg_corr.cpu(), f"final/{self.__class__.__name__}_{self.num_n}/{self.data}/{self.patient}/cor")
+        
+        self.test_step_outputs.clear()
         
     def predict_step(self, batch, batch_idx):
         
