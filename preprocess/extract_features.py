@@ -17,13 +17,14 @@ from models import load_model_weights
 from datasets import STDataset
 from utils import load_config
 
+device = torch.device(f"cuda:3" if torch.cuda.is_available() else "cpu")
 
 def get_sub_features(model, patches, num_n):
     neighbor_features = []
     for m in range(num_n):
         for k in range(num_n):
             patch = patches[:,:,224*m:224*(m+1), 224*k:224*(k+1)]
-            features = model(patch.to(torch.device('cuda:0')))
+            features = model(patch.to(device))
             features = features.detach().cpu()
             
             neighbor_features.append(features)
@@ -62,8 +63,8 @@ if __name__=='__main__':
         raise Exception("Invalid mode")
     
     # Load pretrained resnet model
-    model = load_model_weights("weights/tenpercent_resnet18.ckpt")
-    model = model.to(torch.device('cuda:0'))
+    model = load_model_weights("weights/tenpercent_resnet18.ckpt", device)
+    model = model.to(device)
         
     model.eval()
     
@@ -79,14 +80,14 @@ if __name__=='__main__':
         # Extract features for cross-validation
         
         for fold in tqdm(range(num_k)):
-            testset = STDataset(mode='extraction', extract_mode=extract_mode, fold=fold, **cfg.DATASET)
+            testset = STDataset(mode='train', extract_mode=extract_mode, fold=fold, **cfg.DATASET)
             dataloader = DataLoader(testset, batch_size=1, shuffle=False, num_workers=8)
             
             for i, patches in enumerate(dataloader):
                 file_name = f"{testset.names[i]}.pt"
                 
                 if extract_mode == 'target':
-                    patches = patches.to(torch.device('cuda:0')).squeeze()
+                    patches = patches.to(device).squeeze()
                 else:
                     patches = patches.squeeze()
                 
@@ -120,7 +121,7 @@ if __name__=='__main__':
             extracted_features = []
             for patch in patches:
                 if extract_mode == 'target':
-                    patch = patch.to(torch.device('cuda:0')).squeeze()
+                    patch = patch.to(device).squeeze()
                 else:
                     patch = patch.squeeze()
                 
