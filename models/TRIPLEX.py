@@ -17,7 +17,7 @@ from einops import rearrange
 from models.module import GlobalEncoder, NeighborEncoder, FusionEncoder
 
 
-def load_model_weights(path: str, device = torch.device(f"cuda:0" if torch.cuda.is_available() else "cpu")):       
+def load_model_weights(path: str, device = torch.device(f"cuda:2" if torch.cuda.is_available() else "cpu")):       
         """Load pretrained ResNet18 model without final fc layer.
 
         Args:

@@ -18,7 +18,7 @@ from utils import collate_fn, load_callbacks, load_config, load_loggers
 def get_parse():
     parser = argparse.ArgumentParser()
     parser.add_argument('--config_name', type=str, default='her2st/TRIPLEX', help='logger path.')
-    parser.add_argument('--gpu', type=int, default=[0], help='gpu id')
+    parser.add_argument('--gpu', type=int, default=[2,5,6,7], help='gpu id')
     parser.add_argument('--mode', type=str, default='cv', help='cv / test / external_test / inference')
     parser.add_argument('--test_name', type=str, default='DRP1', help='dataset name:{"10x_breast_ff1","10x_breast_ff2", "10x_breast_ff3"}.')
     parser.add_argument('--exp_id', type=int, default=0, help='')
@@ -90,7 +90,7 @@ def main(cfg, fold=0):
             check_val_every_n_epoch = 1,
             log_every_n_steps=10,
             callbacks = callbacks,
-            amp_backend = 'native',
+            # amp_backend = 'native',
             precision = 16
         )
         
@@ -151,8 +151,9 @@ if __name__ == '__main__':
     cfg.GENERAL.current_day = current_day
     
     if args.mode == 'cv':
-        num_k = cfg.TRAINING.num_k     
-        for fold in range(num_k):
-            main(cfg, fold=fold)
+        # num_k = cfg.TRAINING.num_k     
+        # for fold in range(num_k):
+        #     main(cfg, fold=fold)
+        main(cfg, args.fold)
     else:
         main(cfg, args.fold)

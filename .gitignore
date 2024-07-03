@@ -23,3 +23,12 @@ __pycache__
 
 # Data
 data
+
+# Miscellaneous
+run_logs
+commands.sh
+topoy.yml
+
+# Results
+final
+lightning_logs

@@ -3,6 +3,7 @@
 GENERAL:
   seed: 2021
   log_path: ./logs
+  model_path: ./logs/2024-06-20/2-TRIPLEX-her2st-2021-0/2-TRIPLEX-her2st-2021-0-epoch=92-valid_loss=0.1755-R=0.3428.ckpt
   
 TRAINING:
   num_k: 8

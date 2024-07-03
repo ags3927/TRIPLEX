@@ -6,7 +6,7 @@ GENERAL:
   
 TRAINING:
   num_k: 8
-  batch_size: 128
+  batch_size: 32
   loss: MSE
   optimizer: adam
   learning_rate: 1.0e-4
