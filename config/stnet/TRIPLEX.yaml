@@ -3,6 +3,7 @@
 GENERAL:
   seed: 2021
   log_path: ./logs
+  model_path: /data/ani/repos/TRIPLEX/logs/2024-06-26/0-TRIPLEX-stnet-2021-0/0-TRIPLEX-stnet-2021-0-epoch=27-valid_loss=0.1859-R=0.2816.ckpt
   
 TRAINING:
   num_k: 8

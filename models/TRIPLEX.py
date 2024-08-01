@@ -15,9 +15,9 @@ import torch.nn.functional as F
 from einops import rearrange
 
 from models.module import GlobalEncoder, NeighborEncoder, FusionEncoder
+import pdb
 
-
-def load_model_weights(path: str, device = torch.device(f"cuda:2" if torch.cuda.is_available() else "cpu")):       
+def load_model_weights(path: str, device = torch.device(f"cuda:0" if torch.cuda.is_available() else "cpu")):       
         """Load pretrained ResNet18 model without final fc layer.
 
         Args:
@@ -213,7 +213,9 @@ class TRIPLEX(pl.LightningModule):
         # Global loss
         loss += F.mse_loss(outputs[3].view_as(exp), exp) * (1-self.alpha) # Supervised loss for Global
         loss += F.mse_loss(outputs[0], outputs[3]) * self.alpha           # Distillation loss for Global
-            
+        
+        # loss.to(self.device)
+        
         self.log('train_loss', loss, sync_dist=True)
         return loss
     
@@ -234,10 +236,11 @@ class TRIPLEX(pl.LightningModule):
         loss = F.mse_loss(pred.view_as(exp), exp)
 
         pred=pred.cpu().numpy().T
-        exp=exp.cpu().numpy().T        
+        exp=exp.cpu().numpy().T
+        
         r=[]
         for g in range(self.num_genes):
-            r.append(pearsonr(pred[g],exp[g])[0])
+            r.append(pearsonr(pred[g], exp[g])[0])
         rr = torch.Tensor(r)
         
         self.get_meta(name)
@@ -263,8 +266,13 @@ class TRIPLEX(pl.LightningModule):
             self.best_cor = avg_corr.mean()
             self.best_loss = avg_loss
         
+        # avg_loss.to(self.device)
+        
+        nan_mean = avg_corr.nanmean()
+        # nan_mean.to(self.device)
+        
         self.log('valid_loss', avg_loss, on_epoch=True, prog_bar=True, logger=True, sync_dist=True)
-        self.log('R', avg_corr.nanmean(), on_epoch=True, prog_bar=True, logger=True, sync_dist=True)
+        self.log('R', nan_mean, on_epoch=True, prog_bar=True, logger=True, sync_dist=True)
         
         # Clear memory
         self.validation_step_outputs.clear()
@@ -305,7 +313,7 @@ class TRIPLEX(pl.LightningModule):
             
             ind_match = np.load(f'/data/temp/spatial/TRIPLEX/data/test/{name[0]}/ind_match.npy', allow_pickle=True)
             self.num_genes = len(ind_match)
-            pred = pred[:,ind_match]
+            pred = pred[:, ind_match]
             
         else:        
             outputs = self(patch, wsi, position, neighbor.squeeze(), mask.squeeze())
@@ -319,7 +327,7 @@ class TRIPLEX(pl.LightningModule):
         
         r=[]
         for g in range(self.num_genes):
-            r.append(pearsonr(pred[g],exp[g])[0])
+            r.append(pearsonr(pred[g], exp[g])[0])
         rr = torch.Tensor(r)
         
         self.get_meta(name)

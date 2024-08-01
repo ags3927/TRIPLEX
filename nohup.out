@@ -1,0 +1,16 @@
+Traceback (most recent call last):
+  File "/data/ani/repos/TRIPLEX/main.py", line 159, in <module>
+    main(cfg, args.fold)
+  File "/data/ani/repos/TRIPLEX/main.py", line 71, in main
+    loggers = load_loggers(cfg)
+              ^^^^^^^^^^^^^^^^^
+  File "/data/ani/repos/TRIPLEX/utils.py", line 125, in load_loggers
+    tb_logger = TensorBoardLogger(
+                ^^^^^^^^^^^^^^^^^^
+  File "/home/ani/.conda/envs/trip_hgge/lib/python3.12/site-packages/pytorch_lightning/loggers/tensorboard.py", line 111, in __init__
+    super().__init__(
+  File "/home/ani/.conda/envs/trip_hgge/lib/python3.12/site-packages/lightning_fabric/loggers/tensorboard.py", line 94, in __init__
+    raise ModuleNotFoundError(
+ModuleNotFoundError: Neither `tensorboard` nor `tensorboardX` is available. Try `pip install`ing either.
+DistributionNotFound: The 'tensorboardX' distribution was not found and is required by the application. HINT: Try running `pip install -U 'tensorboardX'`
+DistributionNotFound: The 'tensorboard' distribution was not found and is required by the application. HINT: Try running `pip install -U 'tensorboard'`
